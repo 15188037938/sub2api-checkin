@@ -14,8 +14,12 @@ import time
 import hashlib
 import secrets
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 import threading
+
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "checkin.db")
 PORT = int(os.environ.get("CHECKIN_PORT", 18888))
@@ -364,7 +368,7 @@ class CheckinHandler(BaseHTTPRequestHandler):
 
 def run_server():
     init_db()
-    server = HTTPServer(("0.0.0.0", PORT), CheckinHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", PORT), CheckinHandler)
     print(f"[签到服务] 启动成功: http://0.0.0.0:{PORT}")
     print(f"[签到服务] 管理后台: http://0.0.0.0:{PORT}/admin")
     print(f"[签到服务] 环境变量配置:")
